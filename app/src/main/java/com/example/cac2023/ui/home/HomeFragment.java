@@ -1,6 +1,7 @@
 package com.example.cac2023.ui.home;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,7 +11,12 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.cac2023.backend.APICaller;
 import com.example.cac2023.databinding.FragmentHomeBinding;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class HomeFragment extends Fragment {
 
@@ -26,6 +32,31 @@ public class HomeFragment extends Fragment {
 
         final TextView textView = binding.textHome;
         homeViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
+
+        APICaller caller = new APICaller(getContext());
+
+        JSONArray messages = new JSONArray();
+        JSONObject begin = new JSONObject();
+        JSONObject command = new JSONObject();
+        try {
+            begin.put("role", "system");
+            begin.put("content", "You are a helpful assistant.");
+            command.put("role", "user");
+            command.put("content", "Hello");
+            messages.put(begin);
+            messages.put(command);
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        caller.queryResponse(messages);
+
+
+        while(!caller.isResponseReady());
+
+        Log.v("Main", caller.readResponse());
+
         return root;
     }
 
