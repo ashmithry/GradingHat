@@ -1,35 +1,17 @@
 package com.example.cac2023.backend;
 
-import android.content.Context;
-import android.util.Log;
-import androidx.annotation.Nullable;
-
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
-import com.theokanning.openai.completion.CompletionRequest;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.completion.chat.ChatMessageRole;
 import com.theokanning.openai.service.OpenAiService;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
 public class APICaller
 {
     private static final String API_KEY = "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";
-    private List<ChatMessage> messageList;
+    private ArrayList<ChatMessage> messageList;
     private OpenAiService service;
     private int max_tokens;
     public APICaller(int max_tokens, String system_prompt)
@@ -42,10 +24,11 @@ public class APICaller
     }
     public synchronized void requestAPI(String prompt_data, Consumer<String> reciever)
     {
-        Thread t = new Thread(() -> {
+        Thread t = new Thread(() ->
+        {
             ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
                 .builder()
-                .model("gpt-3.5-turbo-0613")
+                .model("gpt-3.5-turbo")
                 .messages(messageList)
                 .maxTokens(max_tokens)
                 .build();
@@ -62,7 +45,7 @@ public class APICaller
         t.start();
     }
 
-    public List<ChatMessage> getMessageList()
+    public ArrayList<ChatMessage> getMessageList()
     {
         return messageList;
     }
