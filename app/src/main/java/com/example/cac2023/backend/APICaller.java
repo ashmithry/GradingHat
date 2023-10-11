@@ -10,85 +10,56 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.theokanning.openai.completion.CompletionRequest;
+import com.theokanning.openai.completion.chat.ChatCompletionRequest;
+import com.theokanning.openai.completion.chat.ChatMessage;
+import com.theokanning.openai.completion.chat.ChatMessageRole;
+import com.theokanning.openai.service.OpenAiService;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class APICaller
 {
-    private static final String URL = "https://api.openai.com/v1/chat/completions";
-    private boolean responseReady;
-    private String response;
-    private Context applicationContext;
-    public APICaller(Context applicationContext)
+    private static final String API_KEY = "sk-srlRSbK46H3R0kMSKCA7xT3BlbkFJfMlmCMk0yz7l0STRi2dt";
+    private List<ChatMessage> messageList;
+    private OpenAiService service;
+    private int max_tokens;
+    public APICaller(int max_tokens, String system_prompt)
     {
-        this.applicationContext = applicationContext;
+        this.service = new OpenAiService(API_KEY);
+        this.max_tokens = max_tokens;
+        this.messageList = new ArrayList<>();
+
+        messageList.add(new ChatMessage(ChatMessageRole.SYSTEM.value(), system_prompt));
     }
-    public void queryResponse(JSONArray messages)
+    public synchronized String requestAPI(String prompt_data)
     {
-        responseReady = false;
-        RequestQueue queue = Volley.newRequestQueue(applicationContext);
-        JSONObject data = new JSONObject();
+        ChatMessage prompt = new ChatMessage(ChatMessageRole.USER.value(), prompt_data);
 
-        try {
-            data.put("model", "gpt-3.5-turbo");
-            data.put("messages", messages);
-        } catch (JSONException e)
-        {
-            Log.e("APICaller (Backend)", "Exception when writing to JSON: " + e.getMessage());
-            return;
-        }
+        messageList.add(prompt);
+        ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
+                .builder()
+                .model("gpt-3.5-turbo-0613")
+                .messages(messageList)
+                .maxTokens(max_tokens)
+                .build();
 
-        JsonObjectRequest jsonRequest = new JsonObjectRequest(Request.Method.GET, URL, data,
-                (responseData) ->
-                {
-                    try {
-                        response = responseData.
-                                getJSONArray("choices").
-                                getJSONObject(0).
-                                getJSONObject("message").
-                                getString("content");
-                    } catch (JSONException e) {
-                        throw new RuntimeException(e);
-                    }
+        ChatMessage response = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();
+        messageList.add(response);
 
-                    responseReady = true;
-                }, (error) ->
-                {
-                    Log.e("APICaller (Backend)", "Unable to get data from API: \n" + error.getMessage());
-                });
+        return response.getContent();
     }
 
-    public String readResponse()
+    public List<ChatMessage> getMessageList()
     {
-        if(!responseReady) return null;
-
-        responseReady = false;
-        return response;
-    }
-
-    public boolean isResponseReady()
-    {
-        return responseReady;
-    }
-
-    private static class APIRequest extends JsonObjectRequest
-    {
-        public APIRequest(int method, String url, @Nullable JSONObject jsonRequest, Response.Listener<JSONObject> listener, @Nullable Response.ErrorListener errorListener) {
-            super(method, url, jsonRequest, listener, errorListener);
-        }
-
-        @Override
-        public Map<String, String> getHeaders() throws AuthFailureError {
-            HashMap<String, String> params = new HashMap<>();
-            params.put("Content-type", "application/json");
-            params.put("Authorization", "Bearer Enter your token here");
-
-            return params;
-        }
+        return messageList;
     }
 }
