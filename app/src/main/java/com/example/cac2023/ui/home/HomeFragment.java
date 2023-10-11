@@ -34,12 +34,6 @@ public class HomeFragment extends Fragment {
         final TextView textView = binding.textHome;
         homeViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
 
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
-
-        APICaller c = new APICaller(100, "You are a helpful assistant.");
-        Log.e("API", c.requestAPI("Hello"));
-
         return root;
     }
 

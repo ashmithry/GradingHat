@@ -28,7 +28,7 @@ import java.util.function.Consumer;
 
 public class APICaller
 {
-    private static final String API_KEY = "sk-srlRSbK46H3R0kMSKCA7xT3BlbkFJfMlmCMk0yz7l0STRi2dt";
+    private static final String API_KEY = "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";
     private List<ChatMessage> messageList;
     private OpenAiService service;
     private int max_tokens;
@@ -40,22 +40,26 @@ public class APICaller
 
         messageList.add(new ChatMessage(ChatMessageRole.SYSTEM.value(), system_prompt));
     }
-    public synchronized String requestAPI(String prompt_data)
+    public synchronized void requestAPI(String prompt_data, Consumer<String> reciever)
     {
-        ChatMessage prompt = new ChatMessage(ChatMessageRole.USER.value(), prompt_data);
-
-        messageList.add(prompt);
-        ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
+        Thread t = new Thread(() -> {
+            ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
                 .builder()
                 .model("gpt-3.5-turbo-0613")
                 .messages(messageList)
                 .maxTokens(max_tokens)
                 .build();
 
-        ChatMessage response = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();
-        messageList.add(response);
+            ChatMessage response = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();
+            messageList.add(response);
 
-        return response.getContent();
+            reciever.accept(response.getContent());
+        });
+
+        ChatMessage prompt = new ChatMessage(ChatMessageRole.USER.value(), prompt_data);
+        messageList.add(prompt);
+
+        t.start();
     }
 
     public List<ChatMessage> getMessageList()
