@@ -29,5 +29,15 @@ public class Teacher
         }
     }
 
-    public Teacher(){}
+    public Teacher()
+    {
+        name = "Unknown";
+        leniency = "Normal";
+    }
+
+    public Teacher(String name, String leniency)
+    {
+        this.name = name;
+        this.leniency = leniency;
+    }
 }

@@ -7,6 +7,8 @@ import android.view.Menu;
 
 import com.example.cac2023.backend.APICaller;
 import com.example.cac2023.backend.Grader;
+import com.example.cac2023.backend.Paper;
+import com.example.cac2023.backend.Teacher;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 
@@ -250,7 +252,9 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
-        Grader.GenerateFeedback(essay, rubric, "Easy", (r) -> Log.v("T", r), (r) -> Log.d("T", r), (r) -> Log.i("T", r));
+        Paper.readPaperList(getApplicationContext());
+        //Paper.createPaper(essay, rubric, new Teacher("Mr. Allshouse", "Strict"));
+        Paper.writePaperList(getApplicationContext());
     }
 
     @Override

@@ -1,6 +1,9 @@
 package com.example.cac2023.backend;
 
 import android.content.Context;
+import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,12 +29,13 @@ public class Paper
     public Teacher teacher;
     public static JSONArray paperList;
     public static Paper lastPaper;
-    public static JSONObject toJSON(Paper paper)
+    private static JSONObject toJSON(Paper paper)
     {
         JSONObject object = new JSONObject();
         try {
             object.put("document", paper.document);
             object.put("rubric", paper.rubric);
+            object.put("score", paper.score);
             object.put("rubricBreakdown", paper.rubricBreakdown);
             object.put("dateGraded", paper.dateGraded.toString());
             object.put("teacher", paper.teacher.toJSON());
@@ -42,12 +46,13 @@ public class Paper
 
         return object;
     }
-    public static Paper fromJSON(JSONObject object)
+    private static Paper fromJSON(JSONObject object)
     {
         Paper paper = new Paper();
         try {
             paper.document = object.getString("document");
             paper.rubric = object.getString("rubric");
+            paper.score = object.getString("score");
             paper.rubricBreakdown = object.getString("rubricBreakdown");
             paper.dateGraded = LocalDateTime.parse(object.getString("dateGraded"));
             paper.teacher = new Teacher(object.getJSONObject("teacher"));
@@ -58,17 +63,19 @@ public class Paper
 
         return paper;
     }
-    public static void createPaper(String document, String rubric, Teacher teacher)
+    public static synchronized void createPaper(String document, String rubric, Teacher teacher)
     {
-        Paper paper = new Paper();
-        paper.document = document;
-        paper.rubric = rubric;
-        paper.teacher = teacher;
+        new Thread(() -> {
+            Paper paper = new Paper();
+            paper.document = document;
+            paper.rubric = rubric;
+            paper.teacher = teacher;
 
-        paper.Grade();
+            paper.Grade();
 
-        lastPaper = paper;
-        paperList.put(Paper.toJSON(paper));
+            lastPaper = paper;
+            paperList.put(Paper.toJSON(paper));
+        }).start();
     }
     public static void readPaperList(Context context)
     {
@@ -137,6 +144,8 @@ public class Paper
         } else {
             lastPaper = new Paper();
         }
+
+        System.out.println(lastPaper);
     }
     public static void writePaperList(Context context)
     {
@@ -158,7 +167,7 @@ public class Paper
             System.exit(-1);
         }
     }
-    public void Grade()
+    private void Grade()
     {
         AtomicBoolean graded = new AtomicBoolean(false);
         Grader.GenerateFeedback(
@@ -173,19 +182,26 @@ public class Paper
 
         while(!graded.get());
         dateGraded = LocalDateTime.now();
+
+        Log.e("GRADER", score);
+        Log.d("GRADER", feedback);
+        Log.v("GRADER", rubricBreakdown);
     }
 
-    public Paper()
+    private Paper()
     {
-        document = "No Data";
+        document = "No Data\n";
         rubric = "N/A";
         rubricBreakdown = "N/A";
         feedback = "N/A";
         score = "0/100";
         dateGraded = LocalDateTime.now();
         teacher = new Teacher();
+    }
 
-        teacher.name = "No Teacher";
-        teacher.leniency = "Normal";
+    @NonNull @Override
+    public String toString()
+    {
+        return "Title: " + document.substring(0, document.indexOf('\n')) + "\tGrade: " + score + "\tDate Graded: " + dateGraded.toString();
     }
 }
