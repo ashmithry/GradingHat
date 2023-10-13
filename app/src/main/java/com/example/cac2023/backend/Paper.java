@@ -1,6 +1,5 @@
 package com.example.cac2023.backend;
 
-import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -8,27 +7,17 @@ import androidx.annotation.NonNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Paper
 {
-    private static final String filename = "data.json";
     public String document, rubric;
     public String rubricBreakdown, feedback, score;
     public LocalDateTime dateGraded;
-    public Teacher teacher;
+    public int teacherIndex;
     public static JSONArray paperList;
-    public static Paper lastPaper;
     private static JSONObject toJSON(Paper paper)
     {
         JSONObject object = new JSONObject();
@@ -38,7 +27,7 @@ public class Paper
             object.put("score", paper.score);
             object.put("rubricBreakdown", paper.rubricBreakdown);
             object.put("dateGraded", paper.dateGraded.toString());
-            object.put("teacher", paper.teacher.toJSON());
+            object.put("teacherIndex", paper.teacherIndex);
         }
         catch (JSONException e) {
             throw new RuntimeException(e);
@@ -55,7 +44,7 @@ public class Paper
             paper.score = object.getString("score");
             paper.rubricBreakdown = object.getString("rubricBreakdown");
             paper.dateGraded = LocalDateTime.parse(object.getString("dateGraded"));
-            paper.teacher = new Teacher(object.getJSONObject("teacher"));
+            paper.teacherIndex = object.getInt("teacherIndex");
         }
         catch (JSONException e) {
             throw new RuntimeException(e);
@@ -63,64 +52,23 @@ public class Paper
 
         return paper;
     }
-    public static synchronized void createPaper(String document, String rubric, Teacher teacher)
+    public static synchronized void createPaper(String document, String rubric, int teacherIndex)
     {
         new Thread(() -> {
             Paper paper = new Paper();
             paper.document = document;
             paper.rubric = rubric;
-            paper.teacher = teacher;
+            paper.teacherIndex = teacherIndex;
 
             paper.Grade();
 
-            lastPaper = paper;
             paperList.put(Paper.toJSON(paper));
         }).start();
     }
-    public static void readPaperList(Context context)
+
+    public static void readPaperList()
     {
-        JSONObject data = new JSONObject();
-        try {
-            FileInputStream fIS = context.openFileInput(filename);
-            InputStreamReader isReader = new InputStreamReader(fIS);
-            BufferedReader reader = new BufferedReader(isReader);
-
-            StringBuilder jsonBuilder = new StringBuilder();
-            String currentLine;
-            while ((currentLine = reader.readLine()) != null) {
-                jsonBuilder.append(currentLine);
-            }
-
-            if (jsonBuilder.length() < 1) {
-                jsonBuilder.append("{}");
-            }
-
-            data = new JSONObject(
-                    new JSONTokener(jsonBuilder.toString())
-            );
-
-            reader.close();
-            isReader.close();
-            fIS.close();
-        } catch (FileNotFoundException e) {
-            try {
-                FileOutputStream fOS = context.openFileOutput(filename, Context.MODE_PRIVATE);
-                OutputStreamWriter osWriter = new OutputStreamWriter(fOS);
-                BufferedWriter writer = new BufferedWriter(osWriter);
-
-                writer.write("{}");
-
-                writer.close();
-                osWriter.close();
-                fOS.close();
-            } catch (Exception f) {
-                f.printStackTrace();
-                System.exit(-1);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(-1);
-        }
+        JSONObject data = IO.jsonData;
 
         if(data.has("paperList"))
         {
@@ -133,45 +81,22 @@ public class Paper
         {
             paperList = new JSONArray();
         }
-
-        if(paperList.length() > 0)
-        {
-            try {
-                lastPaper = Paper.fromJSON(paperList.getJSONObject(paperList.length() - 1));
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            lastPaper = new Paper();
-        }
-
-        System.out.println(lastPaper);
     }
-    public static void writePaperList(Context context)
+
+    public static void savePaperList()
     {
         try {
-            JSONObject data = new JSONObject();
-            data.put("paperList", paperList);
-
-            FileOutputStream fOS = context.openFileOutput(filename, Context.MODE_PRIVATE);
-            OutputStreamWriter osWriter = new OutputStreamWriter(fOS);
-            BufferedWriter writer = new BufferedWriter(osWriter);
-
-            writer.write(data.toString());
-
-            writer.close();
-            osWriter.close();
-            fOS.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(-1);
+            IO.jsonData.put("paperList", paperList);
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
         }
     }
+
     private void Grade()
     {
         AtomicBoolean graded = new AtomicBoolean(false);
         Grader.GenerateFeedback(
-                document, rubric, teacher.leniency,
+                document, rubric, Teacher.findTeacher(teacherIndex).leniency,
                 (rubricBreakdown) -> this.rubricBreakdown = rubricBreakdown,
                 (feedback) -> this.feedback = feedback,
                 (score) -> {
@@ -196,7 +121,7 @@ public class Paper
         feedback = "N/A";
         score = "0/100";
         dateGraded = LocalDateTime.now();
-        teacher = new Teacher();
+        teacherIndex = -1;
     }
 
     @NonNull @Override
