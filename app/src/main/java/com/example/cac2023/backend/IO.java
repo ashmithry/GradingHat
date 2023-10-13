@@ -2,6 +2,8 @@ package com.example.cac2023.backend;
 
 import android.content.Context;
 
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
@@ -10,8 +12,13 @@ import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+
 
 public class IO
 {
@@ -87,4 +94,26 @@ public class IO
             System.exit(-1);
         }
     }
+
+    public String readDocument(String filepath)
+    {
+        StringBuilder out = new StringBuilder();
+        try{
+            XWPFDocument doc = new XWPFDocument(
+                    Files.newInputStream(Paths.get(filepath))
+            );
+
+            ArrayList<XWPFParagraph> list = (ArrayList<XWPFParagraph>) doc.getParagraphs();
+            for(XWPFParagraph paragraph : list)
+            {
+                out.append(paragraph.getText());
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return out.toString();
+    }
+
 }
