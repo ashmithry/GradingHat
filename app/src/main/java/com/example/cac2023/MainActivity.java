@@ -7,7 +7,9 @@ import android.view.Menu;
 
 import com.example.cac2023.backend.APICaller;
 import com.example.cac2023.backend.Grader;
+import com.example.cac2023.backend.IO;
 import com.example.cac2023.backend.Paper;
+import com.example.cac2023.backend.Rubric;
 import com.example.cac2023.backend.Teacher;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
@@ -20,6 +22,8 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.cac2023.databinding.ActivityMainBinding;
+
+import org.apache.poi.ss.formula.functions.T;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -252,9 +256,10 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
-        Paper.readPaperList(getApplicationContext());
-        //Paper.createPaper(essay, rubric, new Teacher("Mr. Allshouse", "Strict"));
-        Paper.writePaperList(getApplicationContext());
+        IO.getJSONFile(getApplicationContext());
+        Paper.readPaperList();
+        Rubric.readRubricList();
+        Teacher.readTeacherList();
     }
 
     @Override
@@ -269,5 +274,14 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                 || super.onSupportNavigateUp();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Paper.savePaperList();
+        Rubric.saveRubricList();
+        Teacher.saveTeacherList();
+        IO.writeJSONFile(getApplicationContext());
     }
 }
