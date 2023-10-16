@@ -1,4 +1,4 @@
-package com.example.cac2023.ui.slideshow;
+package com.example.cac2023.ui.teachers;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -10,22 +10,20 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.cac2023.databinding.FragmentSlideshowBinding;
+import com.example.cac2023.databinding.FragmentTeachersBinding;
 
-public class SlideshowFragment extends Fragment {
+public class TeachersFragment extends Fragment {
 
-    private FragmentSlideshowBinding binding;
+    private FragmentTeachersBinding binding;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        SlideshowViewModel slideshowViewModel =
-                new ViewModelProvider(this).get(SlideshowViewModel.class);
+        TeachersViewModel slideshowViewModel =
+                new ViewModelProvider(this).get(TeachersViewModel.class);
 
-        binding = FragmentSlideshowBinding.inflate(inflater, container, false);
+        binding = FragmentTeachersBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        final TextView textView = binding.textSlideshow;
-        slideshowViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
         return root;
     }
 
