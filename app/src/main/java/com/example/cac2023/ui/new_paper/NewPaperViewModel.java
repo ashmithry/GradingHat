@@ -1,0 +1,19 @@
+package com.example.cac2023.ui.new_paper;
+
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
+
+public class NewPaperViewModel extends ViewModel {
+
+    private final MutableLiveData<String> mText;
+
+    public NewPaperViewModel() {
+        mText = new MutableLiveData<>();
+        mText.setValue("This is gallery fragment");
+    }
+
+    public LiveData<String> getText() {
+        return mText;
+    }
+}
