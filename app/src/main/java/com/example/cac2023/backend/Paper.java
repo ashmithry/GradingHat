@@ -127,6 +127,92 @@ public class Paper
     @NonNull @Override
     public String toString()
     {
-        return "Title: " + document.substring(0, document.indexOf('\n')) + "\tGrade: " + score + "\tDate Graded: " + dateGraded.toString();
+        return "Title: " + getTitle() + "\tGrade: " + score + "\tDate Graded: " + dateGraded.toString();
+    }
+
+    public String getLetterGrade()
+    {
+        int numerator = Integer.parseInt(score.substring(0, score.indexOf('/')));
+        int denominator = Integer.parseInt(score.substring(score.indexOf('/') + 1));
+
+        double percent = ((double)numerator / denominator) * 100;
+
+        if(percent < 60)
+        {
+            return "F";
+        }
+
+        if(percent < 63)
+        {
+            return "D-";
+        }
+
+        if(percent < 67)
+        {
+            return "D";
+        }
+
+        if(percent < 70)
+        {
+            return "D+";
+        }
+
+        if(percent < 73)
+        {
+            return "C-";
+        }
+
+        if(percent < 77)
+        {
+            return "C";
+        }
+
+        if(percent < 80)
+        {
+            return "C+";
+        }
+
+        if(percent < 83)
+        {
+            return "B-";
+        }
+
+        if(percent < 87)
+        {
+            return "B";
+        }
+
+        if(percent < 90)
+        {
+            return "B+";
+        }
+
+        if(percent < 93)
+        {
+            return "A-";
+        }
+
+        if(percent < 98)
+        {
+            return "A";
+        }
+
+        return "A+";
+    }
+
+    public String getTeacherName()
+    {
+        try {
+            Teacher t = new Teacher(Teacher.teacherList.getJSONObject(teacherIndex));
+            return t.name;
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getTitle()
+    {
+        if(document.indexOf('\n') == -1) return "N/A";
+        return document.substring(0, document.indexOf('\n'));
     }
 }
