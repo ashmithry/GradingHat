@@ -3,67 +3,58 @@ package com.example.cac2023.ui.papers;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.cac2023.R;
+import com.example.cac2023.backend.Paper;
 
-public class PaperAdapter extends RecyclerView.Adapter<PaperAdapter.ViewHolder> {
+import java.util.ArrayList;
 
-    private String[] localDataSet;
+public class PaperAdapter extends RecyclerView.Adapter<PaperAdapter.PaperHolder> {
 
-    /**
-     * Provide a reference to the type of views that you are using
-     * (custom ViewHolder)
-     */
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        private final TextView textView;
+    public ArrayList<Paper> paperList;
 
-        public ViewHolder(View view) {
+    public static class PaperHolder extends RecyclerView.ViewHolder {
+        public final TextView titleText, teacherText, gradeText;
+        public final Button detailsButton;
+
+        public PaperHolder(View view) {
             super(view);
-            // Define click listener for the ViewHolder's View
-
-            textView = (TextView) view.findViewById(R.id.textView);
+            titleText = view.findViewById(R.id.paper_recycler_title_text);
+            teacherText = view.findViewById(R.id.paper_recycler_teacher_text);
+            gradeText = view.findViewById(R.id.paper_recycler_grade_text);
+            detailsButton = view.findViewById(R.id.paper_recycler_details_button);
         }
 
-        public TextView getTextView() {
-            return textView;
-        }
-    }
-
-    /**
-     * Initialize the dataset of the Adapter
-     *
-     * @param dataSet String[] containing the data to populate views to be used
-     * by RecyclerView
-     */
-    public PaperAdapter(String[] dataSet) {
-        localDataSet = dataSet;
     }
 
     // Create new views (invoked by the layout manager)
+    @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        // Create a new view, which defines the UI of the list item
+    public PaperHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         View view = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.recycler_frame_layout, viewGroup, false);
+                .inflate(R.layout.paper_recycler_layout, viewGroup, false);
 
-        return new ViewHolder(view);
+        return new PaperHolder(view);
     }
 
     // Replace the contents of a view (invoked by the layout manager)
     @Override
-    public void onBindViewHolder(ViewHolder viewHolder, final int position) {
+    public void onBindViewHolder(@NonNull PaperHolder viewHolder, final int position) {
 
-        // Get element from your dataset at this position and replace the
-        // contents of the view with that element
-        viewHolder.getTextView().setText(localDataSet[position]);
+        Paper p = paperList.get(position);
+        viewHolder.gradeText.setText(p.getLetterGrade());
+        viewHolder.teacherText.setText(p.getTeacherName());
+        viewHolder.titleText.setText(p.getTitle());
     }
 
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return localDataSet.length;
+        return paperList.size();
     }
 }
