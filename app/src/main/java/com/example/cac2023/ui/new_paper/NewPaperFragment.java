@@ -23,8 +23,6 @@ public class NewPaperFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        NewPaperViewModel galleryViewModel =
-                new ViewModelProvider(this).get(NewPaperViewModel.class);
 
         binding = FragmentNewPaperBinding.inflate(inflater, container, false);
         View root = binding.getRoot();

@@ -35,7 +35,7 @@ public class Paper
 
         return object;
     }
-    private static Paper fromJSON(JSONObject object)
+    public static Paper fromJSON(JSONObject object)
     {
         Paper paper = new Paper();
         try {

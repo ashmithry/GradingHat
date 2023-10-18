@@ -18,8 +18,6 @@ public class RubricsFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        RubricsViewModel galleryViewModel =
-                new ViewModelProvider(this).get(RubricsViewModel.class);
 
         binding = FragmentRubricsBinding.inflate(inflater, container, false);
         View root = binding.getRoot();

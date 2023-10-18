@@ -12,11 +12,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.cac2023.R;
 import com.example.cac2023.backend.Paper;
 
+import org.json.JSONException;
+
 import java.util.ArrayList;
 
 public class PaperAdapter extends RecyclerView.Adapter<PaperAdapter.PaperHolder> {
 
-    public ArrayList<Paper> paperList;
+    public ArrayList<String> teachers, papers, grades;
 
     public static class PaperHolder extends RecyclerView.ViewHolder {
         public final TextView titleText, teacherText, gradeText;
@@ -30,6 +32,38 @@ public class PaperAdapter extends RecyclerView.Adapter<PaperAdapter.PaperHolder>
             detailsButton = view.findViewById(R.id.paper_recycler_details_button);
         }
 
+    }
+
+    public PaperAdapter()
+    {
+        grades = new ArrayList<>();
+        papers = new ArrayList<>();
+        teachers = new ArrayList<>();
+        for(int i = 0; i < Paper.paperList.length(); i++)
+        {
+            Paper p = null;
+            try {
+                p = Paper.fromJSON(Paper.paperList.getJSONObject(i));
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+
+            grades.add(p.getLetterGrade());
+            papers.add(p.getTitle());
+            papers.add(p.getTeacherName());
+        }
+
+        if(grades.size() == 0)
+        {
+            grades.add("B+");
+            teachers.add("Mr. Allshouse");
+            papers.add("Lab Report 1");
+
+
+            grades.add("A+");
+            teachers.add("Mr. Allshouse");
+            papers.add("Lab Report 2");
+        }
     }
 
     // Create new views (invoked by the layout manager)
@@ -46,15 +80,14 @@ public class PaperAdapter extends RecyclerView.Adapter<PaperAdapter.PaperHolder>
     @Override
     public void onBindViewHolder(@NonNull PaperHolder viewHolder, final int position) {
 
-        Paper p = paperList.get(position);
-        viewHolder.gradeText.setText(p.getLetterGrade());
-        viewHolder.teacherText.setText(p.getTeacherName());
-        viewHolder.titleText.setText(p.getTitle());
+        viewHolder.gradeText.setText(grades.get(position));
+        viewHolder.teacherText.setText(teachers.get(position));
+        viewHolder.titleText.setText(papers.get(position));
     }
 
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return paperList.size();
+        return grades.size();
     }
 }
